@@ -72,11 +72,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         if (RegexUtils.isPhoneInvalid(phone)) {
             return Result.fail("手机号格式错误");
         }
-        // 优先密码登录
-        if (StringUtils.isNotBlank(password)) {
-            user = loginWithPassword(phone, password);
-        } else if (StringUtils.isNotBlank(code)) {
-            user = loginWithCode(phone, code);
+        // 根据手机号加锁
+        synchronized (phone.intern()) {
+            // 优先密码登录
+            if (StringUtils.isNotBlank(password)) {
+                user = loginWithPassword(phone, password);
+            } else if (StringUtils.isNotBlank(code)) {
+                user = loginWithCode(phone, code);
+            }
         }
 
         // 登录失败

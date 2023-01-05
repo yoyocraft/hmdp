@@ -6,7 +6,8 @@ package com.hmdp.constants;
  * @author codejuzi
  */
 public class UserConstants {
-    private UserConstants(){}
+    private UserConstants() {
+    }
 
     public static final String USER_NICK_NAME_PREFIX = "user_";
 
