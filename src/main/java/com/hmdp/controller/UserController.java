@@ -21,7 +21,6 @@ import javax.servlet.http.HttpSession;
  * </p>
  *
  * @author codejuzi
- * 
  */
 @Slf4j
 @RestController
@@ -39,7 +38,7 @@ public class UserController {
      */
     @PostMapping("code")
     public Result sendCode(@RequestParam("phone") String phone, HttpSession session) {
-        if(StringUtils.isBlank(phone)) {
+        if (StringUtils.isBlank(phone)) {
             return Result.fail("手机号为空");
         }
         return userService.sendCode(phone, session);
@@ -47,11 +46,12 @@ public class UserController {
 
     /**
      * 登录功能
+     *
      * @param loginForm 登录参数，包含手机号、验证码；或者手机号、密码
      */
     @PostMapping("/login")
-    public Result login(@RequestBody LoginFormDTO loginForm, HttpSession session){
-        if(loginForm == null) {
+    public Result login(@RequestBody LoginFormDTO loginForm, HttpSession session) {
+        if (loginForm == null) {
             return Result.fail("登录信息为空");
         }
         return userService.login(loginForm, session);
@@ -59,23 +59,24 @@ public class UserController {
 
     /**
      * 登出功能
+     *
      * @return 无
      */
     @PostMapping("/logout")
-    public Result logout(){
+    public Result logout() {
         // TODO 实现登出功能
         return Result.fail("功能未完成");
     }
 
     @GetMapping("/me")
-    public Result me(){
+    public Result me() {
         // 直接从UserHolder里面拿
         UserDTO userDTO = UserHolder.getUser();
         return Result.ok(userDTO);
     }
 
     @GetMapping("/info/{id}")
-    public Result info(@PathVariable("id") Long userId){
+    public Result info(@PathVariable("id") Long userId) {
         // 查询详情
         UserInfo info = userInfoService.getById(userId);
         if (info == null) {

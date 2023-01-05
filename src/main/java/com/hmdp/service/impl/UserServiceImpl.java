@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.lang.UUID;
 import cn.hutool.core.util.RandomUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.hmdp.constants.RedisConstants;
 import com.hmdp.constants.UserConstants;
@@ -16,9 +17,9 @@ import com.hmdp.service.IUserService;
 import com.hmdp.utils.RegexUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeanUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.util.DigestUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
@@ -39,6 +40,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     @Resource
     private StringRedisTemplate stringRedisTemplate;
+
+    private static final String SALT = "codejuzi";
 
     @Override
     public Result sendCode(String phone, HttpSession session) {
@@ -63,31 +66,21 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         String phone = loginForm.getPhone();
         String code = loginForm.getCode();
         String password = loginForm.getPassword();
+        User user = null;
         // 校验
         if (RegexUtils.isPhoneInvalid(phone)) {
             return Result.fail("手机号格式错误");
         }
+        // 优先密码登录
         if (StringUtils.isNotBlank(password)) {
-            // TODO: 2023/1/4 密码登录实现
-        }
-        // TODO: 2023/1/4 提取出方法
-        if (StringUtils.isBlank(code)) {
-            return Result.fail("验证码为空");
-        }
-        // 从redis中读取code
-        String codeRedisKey = RedisConstants.LOGIN_CODE_KEY + phone;
-        String cacheCode = stringRedisTemplate.opsForValue().get(codeRedisKey);
-        if (cacheCode == null || !cacheCode.equals(code)) {
-            return Result.fail("验证码错误");
-        }
-        // 查询数据库
-        User user = query().eq("phone", phone).one();
-
-        // 用户不存在，创建用户
-        if (user == null) {
-            user = createUserWithPhone(phone);
+            user = loginWithPassword(phone, password);
+        } else if (StringUtils.isNotBlank(code)) {
+            user = loginWithCode(phone, code);
         }
 
+        if(user == null) {
+            return Result.fail("信息输入有误");
+        }
         // 保存用户信息到redis中
         // 1、生成token和key
         String token = UUID.randomUUID().toString(true);
@@ -95,7 +88,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         // 2、将User对象转换成HashMap存储
         UserDTO userDTO = BeanUtil.copyProperties(user, UserDTO.class);
         // 将每个属性转换成String类型存储
-        Map<String, Object> userMap = BeanUtil.beanToMap(userDTO,new HashMap<>(),
+        Map<String, Object> userMap = BeanUtil.beanToMap(userDTO, new HashMap<>(),
                 CopyOptions.create().setIgnoreNullValue(true)
                         .setFieldValueEditor((fieldName, fieldValue) -> fieldValue.toString()));
         // 3、存储信息
@@ -109,8 +102,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     /**
      * 创建新用户
      *
-     * @param phone
-     * @return
+     * @param phone 手机号
+     * @return 新用户信息
      */
     private User createUserWithPhone(String phone) {
         User user = new User();
@@ -119,6 +112,52 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         user.setNickName(userNickName);
         // 保存用户
         this.save(user);
+        return user;
+    }
+
+    /**
+     * 验证码登录
+     *
+     * @param phone 手机号
+     * @param code  验证码
+     * @return
+     */
+    private User loginWithCode(String phone, String code) {
+        // 从redis中读取code
+        String codeRedisKey = RedisConstants.LOGIN_CODE_KEY + phone;
+        String cacheCode = stringRedisTemplate.opsForValue().get(codeRedisKey);
+        if (cacheCode == null || !cacheCode.equals(code)) {
+            return null;
+        }
+        // 查询数据库
+        User user = query().eq("phone", phone).one();
+
+        // 用户不存在，创建用户
+        if (user == null) {
+            user = createUserWithPhone(phone);
+        }
+        return user;
+    }
+
+    /**
+     * 密码登录
+     *
+     * @param phone 手机号
+     * @param password 密码
+     * @return
+     */
+    private User loginWithPassword(String phone, String password) {
+        // 获得加密后的密码
+        String encryptedPassword = DigestUtils.md5DigestAsHex((SALT + password).getBytes());
+        // 根据手机号查询数据库
+        QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
+        userQueryWrapper.eq("phone", phone);
+        User user = this.getOne(userQueryWrapper);
+        String userPassword = user.getPassword();
+        // 密码未设置 || 密码不正确
+        if(StringUtils.isBlank(userPassword) || !userPassword.equals(encryptedPassword)) {
+            return null;
+        }
         return user;
     }
 }
