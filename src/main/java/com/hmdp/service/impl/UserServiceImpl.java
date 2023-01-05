@@ -15,6 +15,7 @@ import com.hmdp.model.dto.UserDTO;
 import com.hmdp.model.entity.User;
 import com.hmdp.service.IUserService;
 import com.hmdp.utils.RegexUtils;
+import com.hmdp.utils.UserHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -34,14 +35,12 @@ import java.util.concurrent.TimeUnit;
  *
  * @author codejuzi
  */
-@Service
 @Slf4j
+@Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IUserService {
 
     @Resource
     private StringRedisTemplate stringRedisTemplate;
-
-    private static final String SALT = "codejuzi";
 
     @Override
     public Result sendCode(String phone, HttpSession session) {
@@ -78,9 +77,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             user = loginWithCode(phone, code);
         }
 
-        if(user == null) {
+        // 登录失败
+        if (user == null) {
             return Result.fail("信息输入有误");
         }
+
         // 保存用户信息到redis中
         // 1、生成token和key
         String token = UUID.randomUUID().toString(true);
@@ -97,6 +98,21 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         stringRedisTemplate.expire(userRedisKey, RedisConstants.LOGIN_USER_TTL, TimeUnit.MINUTES);
         // 5、返回token
         return Result.ok(token);
+    }
+
+    @Override
+    public Result logout() {
+        // 判断当前用户是否登录
+        UserDTO userDTO = UserHolder.getUser();
+
+        // 未登录返回错误信息
+        if (userDTO == null) {
+            return Result.fail("当前用户未登录");
+        }
+
+        // 登录，移除登录态，返回结果
+        UserHolder.removeUser();
+        return Result.ok();
     }
 
     /**
@@ -120,7 +136,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
      *
      * @param phone 手机号
      * @param code  验证码
-     * @return
+     * @return 用户信息
      */
     private User loginWithCode(String phone, String code) {
         // 从redis中读取code
@@ -142,20 +158,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     /**
      * 密码登录
      *
-     * @param phone 手机号
+     * @param phone    手机号
      * @param password 密码
-     * @return
+     * @return 用户信息
      */
     private User loginWithPassword(String phone, String password) {
         // 获得加密后的密码
-        String encryptedPassword = DigestUtils.md5DigestAsHex((SALT + password).getBytes());
+        String encryptedPassword = DigestUtils.md5DigestAsHex((UserConstants.USER_PASSWORD_SALT + password).getBytes());
         // 根据手机号查询数据库
         QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
         userQueryWrapper.eq("phone", phone);
         User user = this.getOne(userQueryWrapper);
         String userPassword = user.getPassword();
         // 密码未设置 || 密码不正确
-        if(StringUtils.isBlank(userPassword) || !userPassword.equals(encryptedPassword)) {
+        if (StringUtils.isBlank(userPassword) || !userPassword.equals(encryptedPassword)) {
             return null;
         }
         return user;

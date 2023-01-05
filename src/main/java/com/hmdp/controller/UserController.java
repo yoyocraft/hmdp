@@ -64,10 +64,14 @@ public class UserController {
      */
     @PostMapping("/logout")
     public Result logout() {
-        // TODO 实现登出功能
-        return Result.fail("功能未完成");
+        return userService.logout();
     }
 
+    /**
+     * 获取当前登录信息
+     *
+     * @return 用户信息
+     */
     @GetMapping("/me")
     public Result me() {
         // 直接从UserHolder里面拿

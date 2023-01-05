@@ -51,6 +51,5 @@ public class RefreshTokenInterceptor implements HandlerInterceptor {
         // 刷新token过期时间
         stringRedisTemplate.expire(tokenKey, RedisConstants.LOGIN_USER_TTL, TimeUnit.MINUTES);
         return true;
-
     }
 }
