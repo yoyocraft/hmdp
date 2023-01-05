@@ -5,6 +5,7 @@ import com.hmdp.model.dto.LoginFormDTO;
 import com.hmdp.model.dto.Result;
 import com.hmdp.model.entity.User;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 /**
@@ -37,7 +38,8 @@ public interface IUserService extends IService<User> {
     /**
      * 用户登出
      *
+     * @param request request
      * @return
      */
-    Result logout();
+    Result logout(HttpServletRequest request);
 }

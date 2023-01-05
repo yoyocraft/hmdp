@@ -6,6 +6,7 @@ import cn.hutool.core.lang.UUID;
 import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.hmdp.constants.HttpRequestConstants;
 import com.hmdp.constants.RedisConstants;
 import com.hmdp.constants.UserConstants;
 import com.hmdp.mapper.UserMapper;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.HashMap;
 import java.util.Map;
@@ -101,16 +103,26 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     }
 
     @Override
-    public Result logout() {
-        // 判断当前用户是否登录
+    public Result logout(HttpServletRequest request) {
+        // 1、判断当前用户是否登录
         UserDTO userDTO = UserHolder.getUser();
 
-        // 未登录返回错误信息
+        // 2、未登录返回错误信息
         if (userDTO == null) {
             return Result.fail("当前用户未登录");
         }
 
-        // 登录，移除登录态，返回结果
+        // 3、登录，移除登录态，返回结果
+        // 从请求头中获取token
+        String token = request.getHeader(HttpRequestConstants.REQUEST_HEADER_AUTHORIZATION);
+        // 判空
+        if(StringUtils.isBlank(token)) {
+            return Result.fail("用户未登录");
+        }
+        // 根据token从redis里获取用户信息
+        String tokenKey = RedisConstants.LOGIN_USER_KEY + token;
+        // 移除登录态
+        stringRedisTemplate.delete(tokenKey);
         UserHolder.removeUser();
         return Result.ok();
     }

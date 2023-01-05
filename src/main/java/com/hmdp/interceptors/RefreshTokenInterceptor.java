@@ -1,6 +1,7 @@
 package com.hmdp.interceptors;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.hmdp.constants.HttpRequestConstants;
 import com.hmdp.constants.RedisConstants;
 import com.hmdp.model.dto.UserDTO;
 import com.hmdp.utils.UserHolder;
@@ -29,7 +30,7 @@ public class RefreshTokenInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         // 从请求头中获取token
-        String token = request.getHeader("authorization");
+        String token = request.getHeader(HttpRequestConstants.REQUEST_HEADER_AUTHORIZATION);
         // 判空
         if(StringUtils.isBlank(token)) {
             return true;
