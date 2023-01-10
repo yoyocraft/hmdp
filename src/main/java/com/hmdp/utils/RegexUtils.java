@@ -1,11 +1,18 @@
 package com.hmdp.utils;
 
-import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.text.CharSequenceUtil;
 
 /**
+ * 正则匹配工具
+ *
  * @author codejuzi
  */
 public class RegexUtils {
+
+    private RegexUtils() {
+
+    }
+
     /**
      * 是否是无效手机格式
      *
@@ -36,9 +43,15 @@ public class RegexUtils {
         return mismatch(code, RegexPatterns.VERIFY_CODE_REGEX);
     }
 
-    // 校验是否不符合正则格式
+    /**
+     * 校验是否不符合正则格式
+     *
+     * @param str   待校验字符
+     * @param regex 校验规则
+     * @return true:符合，false：不符合
+     */
     private static boolean mismatch(String str, String regex) {
-        if (StrUtil.isBlank(str)) {
+        if (CharSequenceUtil.isBlank(str)) {
             return true;
         }
         return !str.matches(regex);

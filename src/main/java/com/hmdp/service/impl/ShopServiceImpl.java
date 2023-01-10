@@ -2,9 +2,6 @@ package com.hmdp.service.impl;
 
 import java.time.LocalDateTime;
 
-import cn.hutool.core.util.BooleanUtil;
-import cn.hutool.core.util.RandomUtil;
-import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.hmdp.constants.RedisConstants;
 import com.hmdp.model.dto.Result;
@@ -13,15 +10,12 @@ import com.hmdp.mapper.ShopMapper;
 import com.hmdp.service.IShopService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.hmdp.utils.RedisCacheClientUtil;
-import com.hmdp.utils.RedisData;
-import org.apache.commons.lang3.StringUtils;
+import com.hmdp.model.dto.RedisData;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 /**

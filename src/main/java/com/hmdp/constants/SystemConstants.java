@@ -1,4 +1,4 @@
-package com.hmdp.utils;
+package com.hmdp.constants;
 
 public class SystemConstants {
     public static final String IMAGE_UPLOAD_DIR = "/Users/codejuzi/Documents/Project/proeject_source/hmdp";

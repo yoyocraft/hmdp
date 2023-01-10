@@ -1,6 +1,5 @@
 package com.hmdp.utils;
 
-
 import cn.hutool.core.util.RandomUtil;
 import org.springframework.util.DigestUtils;
 

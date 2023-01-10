@@ -1,9 +1,15 @@
 package com.hmdp.utils;
 
 /**
+ * 正则匹配表达式汇总
+ *
  * @author codejuzi
  */
-public abstract class RegexPatterns {
+public class RegexPatterns {
+
+    private RegexPatterns() {
+    }
+
     /**
      * 手机号正则
      */

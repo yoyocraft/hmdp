@@ -20,6 +20,7 @@ spring:
         time-between-eviction-runs: 10s
   jackson:
     default-property-inclusion: non_null # JSON处理时忽略非空字段
+  # 支持Swagger3
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
