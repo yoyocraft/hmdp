@@ -126,10 +126,17 @@ public class RedisCacheClientUtil {
         boolean isLock = tryLock(cacheLockKey);
         if (isLock) {
             // 获取成功，再次获取缓存，DoubleCheck
-            json = stringRedisTemplate.opsForValue().get(cacheLockKey);
+            json = stringRedisTemplate.opsForValue().get(cacheRedisKey);
             if (StringUtils.isNotBlank(json)) {
                 // 命中，直接返回
-                return JSONUtil.toBean(json, type);
+                shopCacheRedisData = JSONUtil.toBean(json, RedisData.class);
+                expireTime = shopCacheRedisData.getExpireTime();
+                shopJsonObj = (JSONObject) shopCacheRedisData.getData();
+                r = JSONUtil.toBean(shopJsonObj, type);
+                // 判断是否过期
+                if (expireTime.isAfter(LocalDateTime.now())) {
+                    return r;
+                }
             }
             // 开启独立线程
             CACHE_REBUILD_EXECUTOR.submit(() -> {
