@@ -1,5 +1,6 @@
 package com.hmdp.service.impl;
 
+import com.hmdp.core.redislock.SimpleRedisLock;
 import com.hmdp.model.dto.Result;
 import com.hmdp.model.entity.SeckillVoucher;
 import com.hmdp.model.entity.VoucherOrder;
@@ -10,6 +11,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.hmdp.utils.UniqueIdGenerateUtil;
 import com.hmdp.utils.UserHolder;
 import org.springframework.aop.framework.AopContext;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,17 +20,19 @@ import java.time.LocalDateTime;
 
 /**
  * <p>
- *  服务实现类
+ * 服务实现类
  * </p>
  *
  * @author codejuzi
- * 
  */
 @Service
 public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, VoucherOrder> implements IVoucherOrderService {
 
     @Resource
     private ISeckillVoucherService seckillVoucherService;
+
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
 
     @Resource
     private UniqueIdGenerateUtil idGenerateUtil;
@@ -38,24 +42,34 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
         // 获取秒杀券信息
         SeckillVoucher seckillVoucher = seckillVoucherService.getById(voucherId);
         // 判断活动是否开始
-        if(seckillVoucher.getBeginTime().isAfter(LocalDateTime.now())) {
+        if (seckillVoucher.getBeginTime().isAfter(LocalDateTime.now())) {
             return Result.fail("活动尚未开始");
         }
         // 判断活动是否结束
-        if(seckillVoucher.getEndTime().isBefore(LocalDateTime.now())) {
+        if (seckillVoucher.getEndTime().isBefore(LocalDateTime.now())) {
             return Result.fail("活动已经结束");
         }
 
         // 判断库存是否充足
-        if(seckillVoucher.getStock() < 1) {
+        if (seckillVoucher.getStock() < 1) {
             return Result.fail("库存不足！");
         }
 
         Long userId = UserHolder.getUser().getId();
-        synchronized (userId.toString().intern()) {
+        SimpleRedisLock simpleRedisLock = new SimpleRedisLock("lock:voucher:order" + userId, stringRedisTemplate);
+
+
+        boolean isLock = simpleRedisLock.tryLock(10);
+        if(!isLock) {
+            return Result.fail("已经抢购过啦");
+        }
+
+        try {
             // 获取当前对象代理对象
             IVoucherOrderService proxy = (IVoucherOrderService) AopContext.currentProxy();
             return proxy.createVoucherOrder(voucherId);
+        } finally {
+            simpleRedisLock.unlock();
         }
     }
 
@@ -65,7 +79,7 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
         // 判断当前用户是否下过单，实现一人一单的逻辑
         Long userId = UserHolder.getUser().getId();
         Integer count = this.query().eq("user_id", userId).eq("voucher_id", voucherId).count();
-        if(count != null && count > 0) {
+        if (count != null && count > 0) {
             return Result.fail("已经抢购过啦！");
         }
 
@@ -76,7 +90,7 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
                 .gt("stock", 0)
                 .update();
 
-        if(!isSuccess) {
+        if (!isSuccess) {
             return Result.fail("库存不足！");
         }
         // 创建订单
