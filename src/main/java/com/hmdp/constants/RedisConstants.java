@@ -17,7 +17,6 @@ public class RedisConstants {
     public static final Long CACHE_NULL_TTL = 2L;
 
     public static final Long CACHE_SHOP_TTL = 30L;
-    public static final Long CACHE_SHOP_REBUILD_TTL = 1800L;
     public static final String CACHE_SHOP_KEY = "cache:shop:";
 
     public static final String CACHE_SHOP_TYPE_KEY = "cache:shop:type";
@@ -31,4 +30,6 @@ public class RedisConstants {
     public static final String FEED_KEY = "feed:";
     public static final String SHOP_GEO_KEY = "shop:geo:";
     public static final String USER_SIGN_KEY = "sign:";
+
+    public static final String LOCK_VOUCHER_ORDER_KEY_PREFIX = "lock:voucher:order";
 }

@@ -38,7 +38,6 @@ public class UniqueIdGenerateUtil {
         long nowSecond = now.toEpochSecond(ZoneOffset.UTC);
         long timestamp = nowSecond - BEGIN_TIMESTAMP;
         String keySuffix = now.format(DateTimeFormatter.ofPattern("yyyy:MM:dd"));
-
         String countKey = String.format("icr:%s:%s", keyPrefix, keySuffix);
         Long count = stringRedisTemplate.opsForValue().increment(countKey);
 
