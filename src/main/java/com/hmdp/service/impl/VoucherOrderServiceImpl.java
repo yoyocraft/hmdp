@@ -71,7 +71,6 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
      */
     private IVoucherOrderService proxy;
 
-
     /**
      * 线程池
      */
@@ -109,9 +108,9 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
                     VoucherOrder voucherOrder
                             = BeanUtil.fillBeanWithMap(record.getValue(), new VoucherOrder(), true);
                     // 创建订单
-                    proxy.createVoucherOrder(voucherOrder);
+                    proxy.handlerVoucherOrder(voucherOrder);
                     // 确认消息
-                    stringRedisTemplate.opsForStream().acknowledge("s1", "g1", record.getId());
+                    stringRedisTemplate.opsForStream().acknowledge(MQ_GROUP_NAME, "g1", record.getId());
                 } catch (Exception e) {
                     log.error("订单处理异常", e);
                     handlerPendingList();
@@ -125,10 +124,10 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
         private void handlerPendingList() {
             while (true) {
                 try {
-                    // 获取消息队列中的订单信息 XREADGROUP GROUP g1 c1 COUNT 1 BLOCK 2000 STREAMS s1 0
+                    // 获取消息队列中的订单信息 XREADGROUP GROUP g1 c1 COUNT 1 STREAMS s1 0
                     List<MapRecord<String, Object, Object>> mqList = stringRedisTemplate.opsForStream().read(
                             Consumer.from("g1", "c1"),
-                            StreamReadOptions.empty().count(1).block(Duration.ofSeconds(2)),
+                            StreamReadOptions.empty().count(1),
                             StreamOffset.create(MQ_GROUP_NAME, ReadOffset.from("0"))
                     );
                     // 校验
@@ -141,9 +140,9 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
                     VoucherOrder voucherOrder
                             = BeanUtil.fillBeanWithMap(mqRecord.getValue(), new VoucherOrder(), true);
                     // 创建订单
-                    proxy.createVoucherOrder(voucherOrder);
+                    proxy.handlerVoucherOrder(voucherOrder);
                     // 确认消息
-                    stringRedisTemplate.opsForStream().acknowledge("s1", "g1", mqRecord.getId());
+                    stringRedisTemplate.opsForStream().acknowledge(MQ_GROUP_NAME, "g1", mqRecord.getId());
                 } catch (Exception e) {
                     log.error("处理订单异常", e);
                 }
@@ -178,6 +177,26 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
         }
 
         return Result.ok(orderId);
+    }
+
+
+    @Override
+    public void handlerVoucherOrder(VoucherOrder voucherOrder) {
+        Long userId = voucherOrder.getUserId();
+        RLock lock = redissonClient.getLock(RedisConstants.LOCK_VOUCHER_ORDER_KEY_PREFIX + userId);
+
+        boolean isLock = lock.tryLock();
+        if (!isLock) {
+            log.error("不允许重复下单");
+            return;
+        }
+
+        try {
+            // 获取当前对象代理对象
+            proxy.createVoucherOrder(voucherOrder);
+        } finally {
+            lock.unlock();
+        }
     }
 
 
