@@ -15,7 +15,7 @@
 ## 1.下载
 克隆完整项目
 ```git
-git clone https://gitee.com/ding-xinliang/hmdp.git
+git clone https://github.com/dingxinliang88/hmdp.git
 ```
 切换分支
 ```git
