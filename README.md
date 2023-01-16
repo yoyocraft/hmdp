@@ -12,7 +12,7 @@
 ## 1.下载
 克隆完整项目
 ```git
-https://gitee.com/ding-xinliang/hmdp.git
+git clone https://gitee.com/ding-xinliang/hmdp.git
 ```
 切换分支
 ```git
