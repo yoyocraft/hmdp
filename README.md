@@ -8,8 +8,9 @@
 
 ## 项目所需要的资源
 - 开发文档 `谋马点评.md` => 位置：src/main/resources/doc/谋马点评.md
-- 数据库文件 => 位置：src/main/resources/db
-- jmeter测试文件 => 位置：src/main/resources/jmxSource
+- 数据库文件 => 位置：src/main/resources/db/hmdp.sql
+- jmeter测试文件 => 位置：src/main/resources/jmxSource/*
+- 修改后的前端代码 => 位置：src/main/resources/frontsource/finishedSource/finishedFrontend.zip
 
 ## 1.下载
 克隆完整项目
