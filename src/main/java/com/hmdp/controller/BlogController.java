@@ -2,13 +2,11 @@ package com.hmdp.controller;
 
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.hmdp.constants.SystemConstants;
 import com.hmdp.model.dto.Result;
 import com.hmdp.model.dto.UserDTO;
 import com.hmdp.model.entity.Blog;
-import com.hmdp.model.entity.User;
 import com.hmdp.service.IBlogService;
-import com.hmdp.service.IUserService;
-import com.hmdp.constants.SystemConstants;
 import com.hmdp.utils.UserHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,7 +26,6 @@ public class BlogController {
 
     @Resource
     private IBlogService blogService;
-
 
 
     @PostMapping
@@ -66,12 +63,24 @@ public class BlogController {
     }
 
     @GetMapping("/{id}")
-    private Result queryBlogById(@PathVariable("id") String id) {
+    public Result queryBlogById(@PathVariable("id") String id) {
         return blogService.queryBlogById(id);
     }
 
     @GetMapping("/likes/{id}")
-    private Result queryBlogLikes(@PathVariable("id") String id) {
+    public Result queryBlogLikes(@PathVariable("id") String id) {
         return blogService.queryBlogLikes(id);
+    }
+
+    @GetMapping("/of/user")
+    public Result queryBlogByUserId(
+            @RequestParam(value = "current", defaultValue = "1") Integer current,
+            @RequestParam("id") Long id) {
+        // 根据用户查询
+        Page<Blog> page = blogService.query()
+                .eq("user_id", id).page(new Page<>(current, SystemConstants.MAX_PAGE_SIZE));
+        // 获取当前页数据
+        List<Blog> records = page.getRecords();
+        return Result.ok(records);
     }
 }
