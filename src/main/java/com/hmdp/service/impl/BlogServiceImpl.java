@@ -113,6 +113,9 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
         }
         // 解析出其中的用户id
         List<Long> userIdList = likedTopFive.stream().map(Long::valueOf).collect(Collectors.toList());
+        if(CollUtil.isEmpty(userIdList)) {
+            return Result.ok(Collections.emptyList());
+        }
         String userIdString = CharSequenceUtil.join(",", userIdList);
         // 根据id查询用户，按照查询出来的id顺序，并对用户脱敏
         List<UserDTO> userList = userService.query()

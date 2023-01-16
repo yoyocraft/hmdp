@@ -1,12 +1,12 @@
 package com.hmdp.controller;
 
 
-import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.text.CharSequenceUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.hmdp.constants.SystemConstants;
 import com.hmdp.model.dto.Result;
 import com.hmdp.model.entity.Shop;
 import com.hmdp.service.IShopService;
-import com.hmdp.constants.SystemConstants;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -74,14 +74,11 @@ public class ShopController {
     @GetMapping("/of/type")
     public Result queryShopByType(
             @RequestParam("typeId") Integer typeId,
-            @RequestParam(value = "current", defaultValue = "1") Integer current
+            @RequestParam(value = "current", defaultValue = "1") Integer current,
+            @RequestParam(value = "x", required = false) Double x,
+            @RequestParam(value = "y", required = false) Double y
     ) {
-        // 根据类型分页查询
-        Page<Shop> page = shopService.query()
-                .eq("type_id", typeId)
-                .page(new Page<>(current, SystemConstants.DEFAULT_PAGE_SIZE));
-        // 返回数据
-        return Result.ok(page.getRecords());
+        return shopService.queryShopByType(typeId, current, x, y);
     }
 
     /**
@@ -98,7 +95,7 @@ public class ShopController {
     ) {
         // 根据类型分页查询
         Page<Shop> page = shopService.query()
-                .like(StrUtil.isNotBlank(name), "name", name)
+                .like(CharSequenceUtil.isNotBlank(name), "name", name)
                 .page(new Page<>(current, SystemConstants.MAX_PAGE_SIZE));
         // 返回数据
         return Result.ok(page.getRecords());
