@@ -30,7 +30,7 @@ public interface IUserService extends IService<User> {
      * 用户登录
      *
      * @param loginForm 登录表单信息
-     * @param session session
+     * @param session   session
      * @return
      */
     Result login(LoginFormDTO loginForm, HttpSession session);
@@ -42,4 +42,18 @@ public interface IUserService extends IService<User> {
      * @return
      */
     Result logout(HttpServletRequest request);
+
+    /**
+     * 用户签到
+     *
+     * @return ok
+     */
+    Result sign();
+
+    /**
+     * 统计用户签到次数
+     *
+     * @return 次数
+     */
+    Result signCount();
 }
