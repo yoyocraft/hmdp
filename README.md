@@ -6,8 +6,10 @@
 - init (包含前端资源): 初始化分支，实战篇的初始代码，建议以这个分支作为自己开发的基础代码
   - 前端资源位于init分支src/main/resources/frontsource/nginx-1.18.0下
 
-## 开发文档 `谋马点评.md`
-位置：src/main/resources/doc/谋马点评.md
+## 项目所需要的资源
+- 开发文档 `谋马点评.md` => 位置：src/main/resources/doc/谋马点评.md
+- 数据库文件 => 位置：src/main/resources/db
+- jmeter测试文件 => 位置：src/main/resources/jmxSource
 
 ## 1.下载
 克隆完整项目
