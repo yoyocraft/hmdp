@@ -75,6 +75,7 @@ public class Blog implements Serializable {
      */
     private Integer liked;
 
+
     /**
      * 评论数量
      */
