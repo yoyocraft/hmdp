@@ -1,4 +1,4 @@
-# 谋马点评(本项目来自b站[黑马程序员](https://space.bilibili.com/37974444)[redis教程](https://www.bilibili.com/video/BV1cr4y1671t)，仅供参考)
+# 类大众点评
 > 本项目 基于MacOS系统开发，使用前保证项目中用的路径是可用的
 
 项目代码包含2个分支：
@@ -7,7 +7,7 @@
   - 前端资源位于init分支src/main/resources/frontsource/nginx-1.18.0下
 
 ## 项目所需要的资源
-- 开发文档 `谋马点评.md` => 位置：src/main/resources/doc/谋马点评.md
+- 开发文档 `doc.md` => 位置：src/main/resources/doc/doc.md
 - 数据库文件 => 位置：src/main/resources/db/hmdp.sql
 - jmeter测试文件 => 位置：src/main/resources/jmxSource/*
 - 修改后的前端代码 => 位置：src/main/resources/frontsource/finishedSource/finishedFrontend.zip
@@ -15,7 +15,7 @@
 ## 1.下载
 克隆完整项目
 ```git
-git clone https://github.com/dingxinliang88/hmdp.git
+git clone https://gitee.com/codejuzi/public-review.git
 ```
 切换分支
 ```git
