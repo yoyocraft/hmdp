@@ -15,7 +15,7 @@
 ## 1.下载
 克隆完整项目
 ```git
-git clone https://gitee.com/codejuzi/public-review.git
+git clone https://github.com/dingxinliang88/hmdp.git
 ```
 切换分支
 ```git
@@ -32,3 +32,26 @@ NOGROUP No such key 'stream.orders' or consumer group 'g1' in XREADGROUP with GR
 ```shell
 XGROUP CREATE stream.orders g1 0 MKSTREAM 
 ```
+
+## 3.运行
+### 后端
+- 创建数据库
+- 在配置文件`application.yml`中配置自己的相关信息：Redis、MySQL、port and so on
+- 按照`2.问题`建立对应的Redis Stream，充当简易的消息队列
+- 确保maven、database等环境正常
+### 前端
+- Nginx部署`修改后的前端代码`即可
+
+## 4.参与本项目
+- Fork 本仓库
+- 根据要修改的代码业务新建 Feat_xxx 分支，xxx为业务、功能
+- 提交代码
+- 新建 Pull Request
+
+## 5.关于作者
+- [博客地址](codejuzi.icu)
+- [Gitee](https://gitee.com/codejuzi)
+- 邮箱
+  - 谷歌：dingxinliang1118@gmail.com
+  - 网易：d1741530592@163.com
+- QQ：1741530592
