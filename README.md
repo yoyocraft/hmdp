@@ -1,4 +1,4 @@
-# 类大众点评
+# 妙鸭🦆点评
 > 本项目 基于MacOS系统开发，使用前保证项目中用的路径是可用的
 
 项目代码包含2个分支：
@@ -7,7 +7,7 @@
   - 前端资源位于init分支src/main/resources/frontsource/nginx-1.18.0下
 
 ## 项目所需要的资源
-- 开发文档 `doc.md` => 位置：src/main/resources/doc/doc.md
+- 开发文档 `doc.md` => 位置：src/main/resources/doc/hmdp.md
 - 数据库文件 => 位置：src/main/resources/db/hmdp.sql
 - jmeter测试文件 => 位置：src/main/resources/jmxSource/*
 - 修改后的前端代码 => 位置：src/main/resources/frontsource/finishedSource/finishedFrontend.zip
