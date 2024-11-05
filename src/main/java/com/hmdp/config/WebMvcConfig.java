@@ -9,11 +9,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.annotation.Resource;
 
-/**
- * SpringMVC 配置
- *
- * @author codejuzi
- */
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
 
@@ -35,7 +30,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 ).order(1);
         // token 刷新拦截器
         registry.addInterceptor(new RefreshTokenInterceptor(stringRedisTemplate))
-                .addPathPatterns("/**").order(0);
+                .addPathPatterns("/**")
+                .order(0);
 
     }
 }

@@ -5,7 +5,9 @@ import com.hmdp.constants.HttpRequestConstants;
 import com.hmdp.constants.RedisConstants;
 import com.hmdp.model.dto.UserDTO;
 import com.hmdp.utils.UserHolder;
+import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.core.annotation.Order;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -14,11 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-/**
- * 刷新token有效期拦截器
- *
- * @author codejuzi
- */
+@Order(0)
 public class RefreshTokenInterceptor implements HandlerInterceptor {
 
     private final StringRedisTemplate stringRedisTemplate;
@@ -28,11 +26,13 @@ public class RefreshTokenInterceptor implements HandlerInterceptor {
     }
 
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+    public boolean preHandle(HttpServletRequest request,
+                             @NonNull HttpServletResponse response,
+                             @NonNull Object handler) throws Exception {
         // 从请求头中获取token
         String token = request.getHeader(HttpRequestConstants.REQUEST_HEADER_AUTHORIZATION);
         // 判空
-        if(StringUtils.isBlank(token)) {
+        if (StringUtils.isBlank(token)) {
             return true;
         }
         // 根据token从redis里获取用户信息
@@ -40,8 +40,8 @@ public class RefreshTokenInterceptor implements HandlerInterceptor {
         Map<Object, Object> userMap = stringRedisTemplate.opsForHash().entries(tokenKey);
 
         // 判空
-        if(userMap.isEmpty()) {
-            response.setStatus(401);
+        if (userMap.isEmpty()) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return false;
         }
         // 转换对象

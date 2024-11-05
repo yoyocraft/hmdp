@@ -124,7 +124,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         // 从请求头中获取token
         String token = request.getHeader(HttpRequestConstants.REQUEST_HEADER_AUTHORIZATION);
         // 判空
-        if(StringUtils.isBlank(token)) {
+        if (StringUtils.isBlank(token)) {
             return Result.fail("用户未登录");
         }
         // 根据token从redis里获取用户信息
@@ -165,22 +165,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
                         .get(BitFieldSubCommands.BitFieldType.unsigned(dayOfMonth))
                         .valueAt(0)
         );
-        if(result == null || result.isEmpty()) {
+        if (result == null || result.isEmpty()) {
             return Result.ok(0);
         }
         Long num = result.get(0);
-        if(num == null || num == 0) {
+        if (num == null || num == 0) {
             return Result.ok(0);
         }
         int count = 0;
-        while(true) {
-            if((num & 1) == 0) {
-                break;
-            } else {
-                count++;
-            }
+        while ((num & 1) != 0) {
+            count++;
             num >>>= 1;
-         }
+        }
         return Result.ok(count);
     }
 

@@ -46,8 +46,15 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
     public Result queryShopById(Long id) {
 
         // 基于逻辑过期时间解决缓存击穿
-        Shop shop = cacheClientUtil.queryShopWithLogicalExpireTime(RedisConstants.CACHE_SHOP_KEY, id, Shop.class,
-                this::getById, RedisConstants.CACHE_SHOP_TTL, TimeUnit.MINUTES,RedisConstants.LOCK_SHOP_KEY);
+        Shop shop = cacheClientUtil.queryShopWithLogicalExpireTime(
+                RedisConstants.CACHE_SHOP_KEY,
+                id,
+                Shop.class,
+                this::getById,
+                RedisConstants.CACHE_SHOP_TTL,
+                TimeUnit.MINUTES,
+                RedisConstants.LOCK_SHOP_KEY
+        );
 
         if (shop == null) {
             return Result.fail("店铺不存在");
@@ -75,7 +82,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
     @Override
     public Result queryShopByType(Integer typeId, Integer current, Double x, Double y) {
         // 判断是否要根据坐标查询
-        if(x == null || y == null) {
+        if (x == null || y == null) {
             // 不需要根据坐标查询，根据类型分页查询
             Page<Shop> shopPage = this.query()
                     .eq("type_id", typeId)
@@ -97,11 +104,11 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
                         RedisGeoCommands.GeoSearchCommandArgs.newGeoSearchArgs().includeDistance().limit(end)
                 );
         // 解析出shopId
-        if(results == null) {
+        if (results == null) {
             return Result.ok(Collections.emptyList());
         }
         List<GeoResult<RedisGeoCommands.GeoLocation<String>>> resultList = results.getContent();
-        if(resultList.size() < from) {
+        if (resultList.size() < from) {
             // 已经是最后一页了，结束
             return Result.ok(Collections.emptyList());
         }

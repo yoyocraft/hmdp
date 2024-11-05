@@ -2,8 +2,8 @@ package com.hmdp.constants;
 
 public class SystemConstants {
 
-    private SystemConstants() {}
-
+    private SystemConstants() {
+    }
 
     public static final String IMAGE_UPLOAD_DIR = "/opt/homebrew/var/www/hmdp/imgs/";
     public static final String USER_NICK_NAME_PREFIX = "user_";

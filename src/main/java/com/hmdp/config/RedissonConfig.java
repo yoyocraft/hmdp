@@ -6,11 +6,6 @@ import org.redisson.config.Config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-/**
- * Redisson配置类
- *
- * @author codejuzi
- */
 @Configuration
 public class RedissonConfig {
 

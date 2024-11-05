@@ -11,13 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 
-/**
- * <p>
- * 前端控制器
- * </p>
- *
- * @author codejuzi
- */
+
 @RestController
 @RequestMapping("/shop")
 public class ShopController {
@@ -58,7 +52,7 @@ public class ShopController {
      */
     @PutMapping
     public Result updateShop(@RequestBody Shop shop) {
-        if(shop == null) {
+        if (shop == null) {
             return Result.fail("店铺不存在");
         }
         return shopService.updateShop(shop);

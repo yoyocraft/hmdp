@@ -58,12 +58,11 @@ public class RedisCacheClientUtil {
      *
      * @param type 返回值字节码对象
      * @param dbFallback 查询数据库的操作
-     * @param <T> id类型
-     * @param <R> 返回值类型
+     * @param <ID> id类型
+     * @param <RESP> 返回值类型
      * @return R
      */
-    public <T, R> R queryShopWithPassThrough(
-            String keyPrefix, T id, Class<R> type, Function<T, R> dbFallback, Long timeout, TimeUnit unit) {
+    public <ID, RESP> RESP queryShopWithPassThrough(String keyPrefix, ID id, Class<RESP> type, Function<ID, RESP> dbFallback, Long timeout, TimeUnit unit) {
         String cacheRedisKey = keyPrefix + id;
         // 查询缓存
         String json = stringRedisTemplate.opsForValue().get(cacheRedisKey);
@@ -78,16 +77,16 @@ public class RedisCacheClientUtil {
         }
 
         // 未命中，查询数据库
-        R r = dbFallback.apply(id);
-        if (r == null) {
+        RESP resp = dbFallback.apply(id);
+        if (resp == null) {
             // 店铺不存在时，缓存空值 => 解决缓存穿透
             stringRedisTemplate.opsForValue().set(cacheRedisKey, "", RedisConstants.CACHE_NULL_TTL, TimeUnit.MINUTES);
             return null;
         }
         // 写入缓存，设置过期时间为30 + 随机值 分钟 => 解决缓存雪崩
         long cacheTimeout = timeout + RandomUtil.randomLong(5);
-        this.set(cacheRedisKey, r, cacheTimeout, unit);
-        return r;
+        this.set(cacheRedisKey, resp, cacheTimeout, unit);
+        return resp;
     }
 
     /**
@@ -95,14 +94,17 @@ public class RedisCacheClientUtil {
      *
      * @param type 返回值字节码对象
      * @param dbFallback 查询数据库的操作
-     * @param <T> id类型
-     * @param <R> 返回值类型
+     * @param <ID> id类型
+     * @param <RESP> 返回值类型
      * @return R
      */
-    public <T, R> R queryShopWithLogicalExpireTime(
-            String keyPrefix, T id, Class<R> type, Function<T, R> dbFallback, Long timeout, TimeUnit unit,
-            String lockKeyPrefix
-    ) {
+    public <ID, RESP> RESP queryShopWithLogicalExpireTime(String keyPrefix,
+                                                          ID id,
+                                                          Class<RESP> type,
+                                                          Function<ID, RESP> dbFallback,
+                                                          Long timeout,
+                                                          TimeUnit unit,
+                                                          String lockKeyPrefix) {
         String cacheRedisKey = keyPrefix + id;
         // 查询缓存
         String json = stringRedisTemplate.opsForValue().get(cacheRedisKey);
@@ -114,11 +116,11 @@ public class RedisCacheClientUtil {
         RedisData shopCacheRedisData = JSONUtil.toBean(json, RedisData.class);
         LocalDateTime expireTime = shopCacheRedisData.getExpireTime();
         JSONObject shopJsonObj = (JSONObject) shopCacheRedisData.getData();
-        R r = JSONUtil.toBean(shopJsonObj, type);
+        RESP resp = JSONUtil.toBean(shopJsonObj, type);
 
         // 判断是否过期
         if (expireTime.isAfter(LocalDateTime.now())) {
-            return r;
+            return resp;
         }
 
         // 过期，缓存重建
@@ -132,10 +134,10 @@ public class RedisCacheClientUtil {
                 shopCacheRedisData = JSONUtil.toBean(json, RedisData.class);
                 expireTime = shopCacheRedisData.getExpireTime();
                 shopJsonObj = (JSONObject) shopCacheRedisData.getData();
-                r = JSONUtil.toBean(shopJsonObj, type);
+                resp = JSONUtil.toBean(shopJsonObj, type);
                 // 判断是否过期
                 if (expireTime.isAfter(LocalDateTime.now())) {
-                    return r;
+                    return resp;
                 }
             }
             // 开启独立线程
@@ -143,9 +145,9 @@ public class RedisCacheClientUtil {
                 // 缓存重建
                 try {
                     // 查询数据库
-                    R r1 = dbFallback.apply(id);
+                    RESP r1 = dbFallback.apply(id);
                     long cacheTimeout = timeout + RandomUtil.randomLong(5);
-                    this.setWithLogicalExpireTime(keyPrefix, id, cacheTimeout, unit);
+                    this.setWithLogicalExpireTime(keyPrefix, r1, cacheTimeout, unit);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 } finally {
@@ -154,7 +156,7 @@ public class RedisCacheClientUtil {
                 }
             });
         }
-        return r;
+        return resp;
     }
 
     /**
@@ -162,12 +164,12 @@ public class RedisCacheClientUtil {
      *
      * @param type 返回值字节码对象
      * @param dbFallback 查询数据库的操作
-     * @param <T> id类型
-     * @param <R> 返回值类型
+     * @param <ID> id类型
+     * @param <RESP> 返回值类型
      * @return R
      */
-    public <T, R> R queryShopWithMutex(
-            String keyPrefix, T id, Class<R> type, Function<T, R> dbFallback, Long timeout, TimeUnit unit, String lockKeyPrefix) {
+    public <ID, RESP> RESP queryShopWithMutex(
+            String keyPrefix, ID id, Class<RESP> type, Function<ID, RESP> dbFallback, Long timeout, TimeUnit unit, String lockKeyPrefix) {
         String cacheKey = keyPrefix + id;
         // 查询缓存
         String json = stringRedisTemplate.opsForValue().get(cacheKey);
@@ -183,7 +185,7 @@ public class RedisCacheClientUtil {
 
         // 获取互斥锁
         String lockKey = lockKeyPrefix + id;
-        R r = null;
+        RESP resp;
         try {
             boolean isLock = tryLock(lockKey);
             // 获取失败，重新获取
@@ -198,9 +200,9 @@ public class RedisCacheClientUtil {
                 return JSONUtil.toBean(json, type);
             }
             // 不命中，再重建缓存
-            r = dbFallback.apply(id);
+            resp = dbFallback.apply(id);
             // 校验
-            if (r == null) {
+            if (resp == null) {
                 // 缓存空值
                 stringRedisTemplate.opsForValue()
                         .set(cacheKey, "", RedisConstants.CACHE_NULL_TTL, TimeUnit.MINUTES);
@@ -208,14 +210,14 @@ public class RedisCacheClientUtil {
             }
             // 存在，写入缓存
             long cacheTimeout = timeout + RandomUtil.randomLong(5);
-            this.set(cacheKey, r, cacheTimeout, unit);
+            this.set(cacheKey, resp, cacheTimeout, unit);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         } finally {
             // 释放锁
             unLock(lockKey);
         }
-        return r;
+        return resp;
     }
 
 

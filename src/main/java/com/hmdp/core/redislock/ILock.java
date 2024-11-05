@@ -1,10 +1,6 @@
 package com.hmdp.core.redislock;
 
-/**
- * 锁接口，基于Redis
- *
- * @author codejuzi
- */
+
 public interface ILock {
 
 

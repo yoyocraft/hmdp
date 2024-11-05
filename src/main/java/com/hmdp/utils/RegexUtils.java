@@ -1,12 +1,8 @@
 package com.hmdp.utils;
 
 import cn.hutool.core.text.CharSequenceUtil;
+import com.hmdp.constants.RegexPatterns;
 
-/**
- * 正则匹配工具
- *
- * @author codejuzi
- */
 public class RegexUtils {
 
     private RegexUtils() {

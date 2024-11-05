@@ -1,10 +1,6 @@
 package com.hmdp.constants;
 
-/**
- * 用户信息常量类
- *
- * @author codejuzi
- */
+
 public class UserConstants {
     private UserConstants() {
     }

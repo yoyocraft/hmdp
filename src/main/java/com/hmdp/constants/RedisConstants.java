@@ -1,13 +1,10 @@
 package com.hmdp.constants;
 
-/**
- * Redis常量类
- *
- * @author codejuzi
- */
+
 public class RedisConstants {
 
-    private RedisConstants() {}
+    private RedisConstants() {
+    }
 
     public static final String LOGIN_CODE_KEY = "login:code:";
     public static final Long LOGIN_CODE_TTL = 2L;

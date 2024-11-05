@@ -40,7 +40,9 @@ public class UniqueIdGenerateUtil {
         String keySuffix = now.format(DateTimeFormatter.ofPattern("yyyy:MM:dd"));
         String countKey = String.format("icr:%s:%s", keyPrefix, keySuffix);
         Long count = stringRedisTemplate.opsForValue().increment(countKey);
-
+        if (count == null) {
+            count = 0L;
+        }
         return timestamp << COUNT_BITS | count;
     }
 }
